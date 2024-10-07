@@ -1,0 +1,163 @@
+external_components:
+  - source:
+      type: git
+      url: https://github.com/gnumpi/esphome_audio
+      ref: dev-next
+    components: [ adf_pipeline, i2s_audio ]
+    refresh: 0s
+
+
+api:
+  on_client_connected:
+        then:
+          - delay: 50ms
+          - light.turn_off: onboard_led
+          - micro_wake_word.start:
+  on_client_disconnected:
+        then:
+          - voice_assistant.stop: 
+
+switch:
+  - platform: template
+    id: mute
+    name: "Mute"
+    optimistic: true
+    on_turn_on: 
+      - micro_wake_word.stop:
+      - voice_assistant.stop:
+      - light.turn_on:
+          id: onboard_led           
+          red: 100%
+          green: 0%
+          blue: 0%
+          brightness: 60%
+          effect: fast pulse 
+      - delay: 2s
+      - light.turn_off:
+          id: onboard_led
+      - light.turn_on:
+          id: onboard_led           
+          red: 100%
+          green: 0%
+          blue: 0%
+          brightness: 30%
+    on_turn_off:
+      - micro_wake_word.start:
+      - light.turn_on:
+          id: onboard_led           
+          red: 0%
+          green: 100%
+          blue: 0%
+          brightness: 60%
+          effect: fast pulse 
+      - delay: 2s
+      - light.turn_off:
+          id: onboard_led 
+   
+
+
+
+#microphone:
+#  - platform: i2s_audio
+#    id: va_microphone
+#    adc_type: external
+#    i2s_din_pin: GPIO40 #SD pin on the INMP441
+#    channel: left
+#    pdm: false
+#    bits_per_sample: 32 bit
+    
+#speaker:
+#    id: va_speaker
+#    platform: i2s_audio
+#    dac_type: external
+#    i2s_dout_pin: GPIO39   #  DIN Pin of the MAX98357A Audio Amplifier
+#    mode: mono
+
+
+
+i2s_audio:
+  - id: i2s_in
+    i2s_lrclk_pin: ${va_in_lrclk}
+    i2s_bclk_pin: ${va_in_bclk}
+  - id: i2s_out
+    i2s_lrclk_pin: ${va_out_lrclk}
+    i2s_bclk_pin: ${va_out_bclk}
+
+adf_pipeline:
+  - platform: i2s_audio
+    type: audio_in
+    id: adf_i2s_in
+    i2s_audio_id: i2s_in
+    i2s_din_pin: ${va_in_data}
+    pdm: false
+    channel: left
+    sample_rate: 16000
+    bits_per_sample: 32bit
+    fixed_settings: true
+
+  - platform: i2s_audio
+    type: audio_out
+    id: adf_i2s_out
+    i2s_audio_id: i2s_out
+    i2s_dout_pin: ${va_out_data}
+    adf_alc: true
+    bits_per_sample: 32bit
+    fixed_settings: true
+    #channel: left
+
+microphone:
+  - platform: adf_pipeline
+    id: adf_microphone
+    gain_log2: 3
+    keep_pipeline_alive: true
+    pipeline:
+      - adf_i2s_in
+      - self
+
+media_player:
+  - platform: adf_pipeline
+    id: adf_media_player
+    name: "Media Player"
+    keep_pipeline_alive: true
+    internal: false
+    pipeline:
+      - self
+      - resampler
+      - adf_i2s_out
+
+micro_wake_word:
+  on_wake_word_detected:
+    # then:
+    - voice_assistant.start:
+        wake_word: !lambda return wake_word;
+    - light.turn_on:
+        id: onboard_led           
+        red: 30%
+        green: 30%
+        blue: 70%
+        brightness: 60%
+        effect: fast pulse 
+  models:
+    - model: hey_jarvis
+    
+voice_assistant:
+  id: va
+  microphone: adf_microphone
+  #noise_suppression_level: 2.0
+  #auto_gain: 31dBFS
+  #volume_multiplier: 4.0
+  #speaker: adf_speaker
+  media_player: adf_media_player
+  on_stt_end:
+       then: 
+         - light.turn_off: onboard_led
+  on_error:
+          - micro_wake_word.start:  
+  on_end:
+        then:
+          - light.turn_off: onboard_led
+          - wait_until:
+              not:
+                voice_assistant.is_running:
+          - micro_wake_word.start:  
+

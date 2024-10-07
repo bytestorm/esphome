@@ -1,0 +1,13 @@
+i2c:
+  sda: ${t_h_sda}
+  scl: ${t_h_scl}
+  scan: true
+  id: i2cbus
+
+sensor:
+  - platform: hdc1080
+    temperature:
+      name: "T"
+    humidity:
+      name: "H"
+    update_interval: 60s

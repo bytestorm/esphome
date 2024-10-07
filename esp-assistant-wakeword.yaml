@@ -1,0 +1,54 @@
+substitutions:
+  device_name: esp-assistant-wakeword
+  friendly_name: ESP32 All In One
+  
+  # onboard led
+  onboard_led_gpio: GPIO21
+
+  # mmwave
+  mmwave_tx: GPIO09
+  mmwave_rx: GPIO10
+
+  # voice assistant
+  va_in_bclk: GPIO41
+  va_in_lrclk: GPIO42
+  va_in_data: GPIO04
+
+  va_out_bclk: GPIO02
+  va_out_lrclk: GPIO01
+  va_out_data: GPIO05
+
+  # t/h
+  t_h_scl: GPIO08
+  t_h_sda: GPIO07
+
+packages:
+  base: !include common/base.yaml
+  bluetooth_proxy: !include common/bluetooth_proxy.yaml
+  onboard_led: !include common/onboard_led.yaml
+  voice_assistant: !include common/voice_assistant.yaml
+  t_h_sensor: !include common/t_h_sensor.yaml
+  mmwave: !include common/mmwave.yaml
+
+
+# device specific
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_AUDIO_BOARD_CUSTOM: "y"
+      CONFIG_ESP32_S3_BOX_BOARD: "y"
+
+psram:
+  mode: quad  # quad for N8R2 and octal for N16R8
+  speed: 80MHz
+
+esphome:
+  platformio_options:
+    board_build.flash_mode: dio
