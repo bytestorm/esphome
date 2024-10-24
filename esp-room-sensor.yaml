@@ -1,6 +1,6 @@
 substitutions:
-  device_name: esp-assistant-wakeword
-  friendly_name: ESP32 All In One
+  device_name: esp-room-sensor-01
+  friendly_name: Office Sensor
   
   # onboard led
   onboard_led_gpio: GPIO21
@@ -46,12 +46,16 @@ esp32:
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
       CONFIG_AUDIO_BOARD_CUSTOM: "y"
       CONFIG_ESP32_S3_BOX_BOARD: "y"
+      CONFIG_BT_ALLOCATION_FROM_SPIRAM_FIRST: "y"
+      CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY: "y"
+      CONFIG_ESP32_WIFI_IRAM_OPT: "n"
+      CONFIG_ESP32_WIFI_RX_IRAM_OPT: "n"
+      CONFIG_LWIP_IRAM_OPTIMIZATION: "n"
 
 psram:
-  mode: quad  # quad for N8R2 and octal for N16R8
+  mode: quad
   speed: 80MHz
 
 esphome:
   platformio_options:
     board_build.flash_mode: dio
-    board_build.esp-idf.memory_type: qio_opi

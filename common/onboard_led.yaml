@@ -22,3 +22,9 @@ esphome:
         blue: 100%
         brightness: 60%
         effect: fast pulse
+
+api:
+  on_client_connected:
+        then:
+          - delay: 50ms
+          - light.turn_off: onboard_led

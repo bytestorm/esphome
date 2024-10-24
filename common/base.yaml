@@ -15,15 +15,32 @@ wifi:
   password: !secret wifi_password
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: ${device_name}
-    password: !secret fallback_wifi_password
+#  ap:
+#    ssid: ${device_name}
+#    password: !secret fallback_wifi_password
 
-captive_portal:
+#captive_portal:
 
 logger:
+  level: INFO
 
-button:
-  - platform: restart
-    name: "Restart Device"
-    id: restart_device
+#button:
+#  - platform: restart
+#    name: "Restart Device"
+#    id: restart_device
+
+debug:
+  update_interval: 1s
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+    psram:
+      name: "Free PSRAM"
+  - platform: uptime
+    name: Uptime
